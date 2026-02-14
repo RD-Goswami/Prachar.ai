@@ -4,6 +4,36 @@
 
 **Prachar.ai** is an autonomous AI Creative Director designed for Indian students, creators, and college clubs competing in the AWS "AI for Bharat" Hackathon (Student Track: Media, Content & Creativity). The system uses agentic AI to autonomously plan, draft, and design culturally relevant social media campaigns in Hinglish, leveraging AWS Bedrock for reasoning and generation, with RAG-based brand consistency.
 
+### Development Methodology
+
+This project follows **Kiro's Spec-Driven Development** methodology:
+
+1. **Requirements First**: Comprehensive functional and non-functional requirements with testable acceptance criteria
+2. **Design Specification**: Detailed system architecture, component design, and API specifications
+3. **Iterative Implementation**: Code developed against specifications with continuous validation
+4. **Test-Driven Validation**: Unit, integration, and property-based tests aligned with acceptance criteria
+5. **Documentation-Centric**: All decisions, trade-offs, and implementations documented for transparency
+
+**Kiro Artifacts:**
+- `specs/requirements.md` - This document (350+ lines)
+- `specs/design.md` - System design specification (1000+ lines)
+- `specs/COGNITO_AUTHENTICATION.md` - Authentication implementation guide (500+ lines)
+- `specs/HACKATHON_CRITERIA_REVIEW.md` - Hackathon alignment review
+
+### AWS Services Integration
+
+**Core Services:**
+- **Amazon Bedrock**: Claude 3.5 Sonnet (reasoning), Titan Image Generator (visuals), Knowledge Bases (RAG), Guardrails (safety)
+- **Amazon Cognito**: User Pools for merchant authentication, JWT-based authorization
+- **AWS Lambda**: Serverless compute for agent execution (Python 3.11)
+
+**Supporting Services:**
+- **Amazon DynamoDB**: Campaign storage with user isolation
+- **Amazon S3**: Generated image storage and brand guideline PDFs
+- **Amazon API Gateway**: REST API with Cognito Authorizer
+- **Amazon CloudWatch**: Logging, monitoring, and audit trails
+- **AWS Amplify**: Frontend hosting and CI/CD
+
 ## Glossary
 
 - **Creative_Director_Agent**: The autonomous Strands-based supervisor agent that plans and executes campaign workflows

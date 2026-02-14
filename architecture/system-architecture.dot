@@ -1,0 +1,414 @@
+digraph PracharAI {
+    // Graph settings for professional appearance
+    graph [
+        rankdir=TB
+        splines=ortho
+        nodesep=1.0
+        ranksep=1.2
+        bgcolor="#FFFFFF"
+        fontname="Arial"
+        fontsize=14
+        label="Prachar.ai - Autonomous AI Creative Director\nAWS Architecture for AI for Bharat Hackathon"
+        labelloc=t
+        fontsize=20
+    ]
+    
+    node [
+        shape=box
+        style="rounded,filled"
+        fontname="Arial"
+        fontsize=12
+        margin=0.3
+    ]
+    
+    edge [
+        fontname="Arial"
+        fontsize=11
+        color="#232F3E"
+        penwidth=2
+    ]
+    
+    // ============================================================================
+    // LAYER 1: USER INTERFACE (Presentation Layer)
+    // ============================================================================
+    
+    subgraph cluster_presentation {
+        label="PRESENTATION LAYER"
+        style=filled
+        color="#E7F3FF"
+        fontsize=14
+        fontname="Arial Bold"
+        
+        user [
+            label="Student/Creator\n(Browser)"
+            shape=circle
+            fillcolor="#FF9900"
+            fontcolor=white
+            width=1.5
+        ]
+        
+        frontend [
+            label="Next.js 14 Frontend\n(AWS Amplify)\n\n• React Components\n• Tailwind CSS\n• Framer Motion"
+            fillcolor="#FF9900"
+            fontcolor=white
+        ]
+    }
+    
+    // ============================================================================
+    // LAYER 2: IDENTITY & AUTHENTICATION (Security Layer)
+    // ============================================================================
+    
+    subgraph cluster_identity {
+        label="IDENTITY & AUTHENTICATION LAYER"
+        style=filled
+        color="#FFE5E5"
+        fontsize=14
+        fontname="Arial Bold"
+        
+        cognito [
+            label="Amazon Cognito\nUser Pool\n\n• Email Verification\n• JWT Tokens (ID/Access/Refresh)\n• Custom Attributes\n• MFA Support"
+            fillcolor="#DD344C"
+            fontcolor=white
+        ]
+    }
+    
+    // ============================================================================
+    // LAYER 3: API GATEWAY (Entry Point Layer)
+    // ============================================================================
+    
+    subgraph cluster_api {
+        label="API GATEWAY LAYER"
+        style=filled
+        color="#FFF4E5"
+        fontsize=14
+        fontname="Arial Bold"
+        
+        apigateway [
+            label="Amazon API Gateway\n(REST API)\n\n• Cognito Authorizer\n• JWT Validation\n• Rate Limiting\n• CORS Configuration"
+            fillcolor="#FF4F8B"
+            fontcolor=white
+        ]
+    }
+    
+    // ============================================================================
+    // LAYER 4: COMPUTE (Orchestration Layer)
+    // ============================================================================
+    
+    subgraph cluster_compute {
+        label="COMPUTE & ORCHESTRATION LAYER"
+        style=filled
+        color="#FFF9E5"
+        fontsize=14
+        fontname="Arial Bold"
+        
+        lambda [
+            label="AWS Lambda\n(Python 3.11)\n\n• Strands SDK Agent\n• Event Handler\n• User Context Extraction\n• Error Handling"
+            fillcolor="#FF9900"
+            fontcolor=white
+        ]
+        
+        strands [
+            label="Strands Agentic Loop\n\n1. REASON: Analyze Goal\n2. PLAN: Structure Campaign\n3. ACT: Execute Tools\n4. VALIDATE: Check Quality"
+            fillcolor="#146EB4"
+            fontcolor=white
+            shape=box
+            style="rounded,filled,dashed"
+        ]
+    }
+    
+    // ============================================================================
+    // LAYER 5: AI INTELLIGENCE (Bedrock Services)
+    // ============================================================================
+    
+    subgraph cluster_bedrock {
+        label="AI INTELLIGENCE LAYER (Amazon Bedrock)"
+        style=filled
+        color="#E8F4FF"
+        fontsize=14
+        fontname="Arial Bold"
+        
+        // RAG Component
+        kb [
+            label="Bedrock Knowledge Base\n(RAG)\n\n• Brand Guidelines Storage\n• Titan Embeddings\n• OpenSearch Serverless\n• Semantic Search"
+            fillcolor="#527FFF"
+            fontcolor=white
+        ]
+        
+        // Text Generation
+        claude [
+            label="Amazon Bedrock\nClaude 3.5 Sonnet\n\n• Campaign Planning\n• Hinglish Copywriting\n• Cultural Context\n• 3 Caption Variations"
+            fillcolor="#527FFF"
+            fontcolor=white
+        ]
+        
+        // Safety Layer
+        guardrails [
+            label="Bedrock Guardrails\n\n• Hate Speech Filter\n• PII Redaction\n• Violence Filter\n• Cultural Sensitivity"
+            fillcolor="#DD344C"
+            fontcolor=white
+        ]
+        
+        // Image Generation
+        titan [
+            label="Amazon Bedrock\nTitan Image Generator v1\n\n• 1024x1024 Posters\n• Brand Color Integration\n• Premium Quality\n• Text Overlay"
+            fillcolor="#527FFF"
+            fontcolor=white
+        ]
+    }
+    
+    // ============================================================================
+    // LAYER 6: STORAGE (Persistence Layer)
+    // ============================================================================
+    
+    subgraph cluster_storage {
+        label="STORAGE & PERSISTENCE LAYER"
+        style=filled
+        color="#E5F9E5"
+        fontsize=14
+        fontname="Arial Bold"
+        
+        s3 [
+            label="Amazon S3\n\n• Generated Images\n• Brand PDFs\n• Pre-signed URLs\n• Lifecycle Policies"
+            fillcolor="#569A31"
+            fontcolor=white
+        ]
+        
+        dynamodb [
+            label="Amazon DynamoDB\n\n• Campaign Records\n• User Isolation (user_id PK)\n• Brand Profiles\n• Audit Logs"
+            fillcolor="#527FFF"
+            fontcolor=white
+        ]
+    }
+    
+    // ============================================================================
+    // LAYER 7: MONITORING (Observability Layer)
+    // ============================================================================
+    
+    subgraph cluster_monitoring {
+        label="MONITORING & OBSERVABILITY LAYER"
+        style=filled
+        color="#FFF0F5"
+        fontsize=14
+        fontname="Arial Bold"
+        
+        cloudwatch [
+            label="Amazon CloudWatch\n\n• Lambda Logs\n• Guardrail Events\n• Performance Metrics\n• Audit Trail"
+            fillcolor="#FF4F8B"
+            fontcolor=white
+        ]
+    }
+    
+    // ============================================================================
+    // EXECUTION PATH: LABELED 1-12
+    // ============================================================================
+    
+    // Path 1-2: User → Frontend → Cognito
+    user -> frontend [
+        label="1. Submit Goal"
+        color="#FF9900"
+        penwidth=3
+    ]
+    
+    frontend -> cognito [
+        label="2. Authenticate\n(Email/Password)"
+        color="#DD344C"
+        penwidth=3
+    ]
+    
+    // Path 3-4: Cognito → API Gateway → Lambda
+    cognito -> apigateway [
+        label="3. JWT Tokens\n(ID + Access + Refresh)"
+        color="#DD344C"
+        penwidth=3
+    ]
+    
+    apigateway -> lambda [
+        label="4. Validated Request\n(user_id extracted)"
+        color="#FF9900"
+        penwidth=3
+    ]
+    
+    // Path 5-6: Lambda → Strands → Knowledge Base
+    lambda -> strands [
+        label="5. Initialize Agent\n(Goal + User Context)"
+        color="#146EB4"
+        penwidth=3
+        style=dashed
+    ]
+    
+    strands -> kb [
+        label="6. RAG Query\n(Retrieve Brand Guidelines)"
+        color="#527FFF"
+        penwidth=3
+    ]
+    
+    // Path 7-8: Knowledge Base → Claude → Guardrails
+    kb -> claude [
+        label="7. Brand Context\n+ Campaign Goal"
+        color="#527FFF"
+        penwidth=3
+    ]
+    
+    claude -> guardrails [
+        label="8. Generated Copy\n(3 Hinglish Captions)"
+        color="#527FFF"
+        penwidth=3
+    ]
+    
+    // Path 9-10: Guardrails → Titan → S3
+    guardrails -> titan [
+        label="9. Validated Copy\n(PII Redacted)"
+        color="#DD344C"
+        penwidth=3
+    ]
+    
+    titan -> s3 [
+        label="10. Generated Image\n(Base64 → PNG)"
+        color="#569A31"
+        penwidth=3
+    ]
+    
+    // Path 11-12: S3 → DynamoDB → Frontend
+    s3 -> dynamodb [
+        label="11. Image URL\n+ Campaign Data"
+        color="#527FFF"
+        penwidth=3
+    ]
+    
+    dynamodb -> frontend [
+        label="12. Complete Campaign\n(Plan + Captions + Image)"
+        color="#FF9900"
+        penwidth=3
+    ]
+    
+    // ============================================================================
+    // SUPPORTING CONNECTIONS (Dotted lines for context)
+    // ============================================================================
+    
+    // Monitoring connections
+    lambda -> cloudwatch [
+        label="Logs"
+        style=dotted
+        color="#999999"
+        penwidth=1
+    ]
+    
+    guardrails -> cloudwatch [
+        label="Violations"
+        style=dotted
+        color="#999999"
+        penwidth=1
+    ]
+    
+    apigateway -> cloudwatch [
+        label="API Metrics"
+        style=dotted
+        color="#999999"
+        penwidth=1
+    ]
+    
+    // Strands orchestration (internal)
+    strands -> claude [
+        label="Tool: generate_copy"
+        style=dashed
+        color="#146EB4"
+        penwidth=1
+    ]
+    
+    strands -> titan [
+        label="Tool: generate_image"
+        style=dashed
+        color="#146EB4"
+        penwidth=1
+    ]
+    
+    // Data flow back to Lambda
+    dynamodb -> lambda [
+        label="Campaign History"
+        style=dotted
+        color="#999999"
+        penwidth=1
+        dir=back
+    ]
+    
+    // ============================================================================
+    // LEGEND
+    // ============================================================================
+    
+    subgraph cluster_legend {
+        label="LEGEND"
+        style=filled
+        color="#F5F5F5"
+        fontsize=12
+        fontname="Arial Bold"
+        
+        legend_main [
+            label="Main Execution Path (1-12)"
+            shape=plaintext
+            fillcolor=transparent
+        ]
+        
+        legend_orchestration [
+            label="Agentic Orchestration"
+            shape=plaintext
+            fillcolor=transparent
+        ]
+        
+        legend_monitoring [
+            label="Monitoring & Logs"
+            shape=plaintext
+            fillcolor=transparent
+        ]
+        
+        legend_main -> legend_orchestration [
+            label="Solid Line"
+            color="#FF9900"
+            penwidth=3
+        ]
+        
+        legend_orchestration -> legend_monitoring [
+            label="Dashed Line"
+            style=dashed
+            color="#146EB4"
+            penwidth=2
+        ]
+        
+        legend_monitoring -> legend_main [
+            label="Dotted Line"
+            style=dotted
+            color="#999999"
+            penwidth=1
+            dir=back
+        ]
+    }
+    
+    // ============================================================================
+    // ANNOTATIONS
+    // ============================================================================
+    
+    annotation1 [
+        label="SECURITY: All Bedrock API calls\nauthenticated with user_id from JWT"
+        shape=note
+        fillcolor="#FFFFCC"
+        fontsize=10
+    ]
+    
+    annotation2 [
+        label="AUTONOMY: Strands Agent\nautonomously plans and executes\nwithout user intervention"
+        shape=note
+        fillcolor="#CCFFCC"
+        fontsize=10
+    ]
+    
+    annotation3 [
+        label="COMPLIANCE: Guardrails ensure\nall content is safe and culturally\nappropriate for Indian audience"
+        shape=note
+        fillcolor="#FFCCCC"
+        fontsize=10
+    ]
+    
+    // Position annotations
+    {rank=same; cognito; annotation1}
+    {rank=same; strands; annotation2}
+    {rank=same; guardrails; annotation3}
+}
