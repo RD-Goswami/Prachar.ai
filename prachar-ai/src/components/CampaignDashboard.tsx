@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Sparkles, Terminal, Activity, Database, Globe, Copy, Check, Zap, LogOut } from 'lucide-react';
+import { Send, Sparkles, Terminal, Activity, Database, Globe, Copy, Check, Zap, LogOut, Menu, X, Plus, Download, BookOpen } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -110,6 +110,7 @@ export default function CampaignDashboard({ accessToken, userEmail, onLogout }: 
     dbSync: 'OK',
     region: 'US-EAST-1'
   });
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -219,123 +220,223 @@ export default function CampaignDashboard({ accessToken, userEmail, onLogout }: 
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-cyan-500/10 via-indigo-500/5 to-transparent blur-3xl"></div>
       </div>
 
-      {/* Main Split-Pane Layout */}
-      <div className="flex-1 flex relative z-10">
-        
-        {/* LEFT SIDEBAR - INPUT ONLY (Fixed 400px) */}
-        <div className="w-[400px] border-r border-zinc-800 flex flex-col bg-zinc-900/50 backdrop-blur-xl">
+      {/* Mobile Header (Hamburger + Branding + Status) */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button
+            onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+          >
+            {isMobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
           
-          {/* Sidebar Header */}
-          <div className="p-4 border-b border-zinc-800">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Terminal className="w-5 h-5 text-indigo-400" />
-                <h2 className="text-sm font-mono font-bold text-white">DIRECTOR'S TERMINAL</h2>
-              </div>
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-400" />
+            <span className="text-xs font-mono font-bold">PRACHAR.AI // WAR ROOM</span>
+          </div>
+
+          <div className="flex items-center gap-3 text-xs font-mono">
+            <div className="flex items-center gap-1">
+              <Activity className="w-3 h-3 text-indigo-400" />
+              <span className={`font-bold ${
+                systemStatus.tier === 'ACTIVE' ? 'text-green-400' :
+                systemStatus.tier === 'ERROR' ? 'text-red-400' :
+                systemStatus.tier.startsWith('TIER') ? 'text-yellow-400' :
+                'text-zinc-400'
+              }`}>
+                {systemStatus.tier === 'STANDBY' ? 'RDY' : systemStatus.tier.replace('TIER_', 'T')}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Overlay */}
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/80 z-40 lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* LEFT SIDEBAR - SLIDE-OUT DRAWER ON MOBILE, FIXED ON DESKTOP */}
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className={`fixed inset-y-0 left-0 z-50 w-[80%] max-w-[400px] transform transition-transform duration-300 lg:fixed lg:translate-x-0 lg:w-[400px] border-r border-zinc-800 flex flex-col bg-zinc-900 lg:bg-zinc-900/50 backdrop-blur-xl ${
+          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        
+        {/* Sidebar Header - Visible on Both Mobile and Desktop */}
+        <div className="p-4 border-b border-zinc-800">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-5 h-5 text-indigo-400" />
+              <h2 className="text-sm font-mono font-bold text-white">DIRECTOR'S TERMINAL</h2>
+            </div>
+            <div className="flex items-center gap-2">
               {onLogout && (
                 <button
                   onClick={onLogout}
-                  className="p-1.5 rounded-lg hover:bg-zinc-800 transition-colors text-zinc-500 hover:text-red-400"
+                  className="p-1.5 rounded-lg hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-red-400"
                   title="Logout"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               )}
-            </div>
-            <p className="text-xs text-zinc-500 font-mono">{userEmail}</p>
-          </div>
-
-          {/* Spacer */}
-          <div className="flex-1 flex items-center justify-center p-6">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto">
-                <Sparkles className="w-8 h-8 text-indigo-400" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-mono text-zinc-400">COMMAND CENTER</p>
-                <p className="text-xs text-zinc-600">Enter directive below</p>
-              </div>
+              <button
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="lg:hidden p-1.5 rounded-lg hover:bg-zinc-800 transition-colors text-zinc-400"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
+          <p className="text-xs text-white font-medium truncate">{userEmail}</p>
+        </div>
 
-          {/* Input Area */}
-          <div className="p-4 border-t border-zinc-800">
-            <div className="space-y-3">
-              <label className="text-xs font-mono text-indigo-400 uppercase tracking-wider">Campaign Directive</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleGenerate()}
-                  placeholder="Enter campaign directive..."
-                  disabled={isGenerating}
-                  className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
-                />
-                <button
-                  onClick={handleGenerate}
-                  disabled={isGenerating || !inputValue.trim()}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white px-4 rounded-lg transition-colors"
-                >
-                  <Send className="w-5 h-5" />
-                </button>
-              </div>
-              {isGenerating && (
-                <div className="flex items-center gap-2 text-purple-400 text-xs">
-                  <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-                  <span className="font-mono">AI REASONING...</span>
-                </div>
-              )}
+        {/* Tactical Navigation Menu */}
+        <div className="p-4 space-y-2">
+          {/* New Directive - Reset State */}
+          <button 
+            onClick={() => {
+              setMessages([]);
+              setCurrentCampaign(null);
+              setInputValue('');
+              setIsMobileSidebarOpen(false);
+              setSystemStatus({ tier: 'STANDBY', dbSync: 'OK', region: 'US-EAST-1' });
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-zinc-800/50 border border-zinc-700 hover:border-indigo-500/50 hover:bg-zinc-800 cursor-pointer transition-colors group"
+          >
+            <Plus className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />
+            <span className="text-sm font-mono text-white group-hover:text-indigo-100">New Directive</span>
+          </button>
+          
+          {/* Export Campaign - Download JSON */}
+          <button 
+            onClick={() => {
+              if (messages.length > 0) {
+                const blob = new Blob([JSON.stringify(messages, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'prachar_campaign.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                setIsMobileSidebarOpen(false);
+              } else {
+                console.warn('No campaign data to export');
+              }
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-zinc-800/50 border border-zinc-700 hover:border-purple-500/50 hover:bg-zinc-800 cursor-pointer transition-colors group"
+          >
+            <Download className="w-4 h-4 text-purple-400 group-hover:text-purple-300" />
+            <span className="text-sm font-mono text-white group-hover:text-purple-100">Export Campaign</span>
+          </button>
+          
+          {/* View Architecture - Link to GitHub */}
+          <button 
+            onClick={() => {
+              window.open('https://github.com/SxBxcoder/Prachar.ai', '_blank');
+              setIsMobileSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-zinc-800/50 border border-zinc-700 hover:border-cyan-500/50 hover:bg-zinc-800 cursor-pointer transition-colors group"
+          >
+            <BookOpen className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300" />
+            <span className="text-sm font-mono text-white group-hover:text-cyan-100">View Architecture</span>
+          </button>
+        </div>
+
+        {/* Spacer - Desktop Only */}
+        <div className="hidden lg:flex flex-1 items-center justify-center p-6">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto">
+              <Sparkles className="w-8 h-8 text-indigo-400" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-mono text-zinc-400">COMMAND CENTER</p>
+              <p className="text-xs text-zinc-600">Enter directive below</p>
             </div>
           </div>
         </div>
 
-        {/* CENTER CANVAS - ACTIVE INTELLIGENCE FEED (Fluid) */}
-        <div className="flex-1 overflow-y-auto">
-          
-          {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-zinc-600 p-8">
-              <div className="w-20 h-20 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4">
-                <Sparkles className="w-8 h-8 opacity-30" />
+        {/* Input Area - Desktop Only */}
+        <div className="hidden lg:flex flex-col p-4 border-t border-zinc-800">
+          <div className="space-y-3">
+            <label className="text-xs font-mono text-indigo-400 uppercase tracking-wider">Campaign Directive</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleGenerate()}
+                placeholder="Enter campaign directive..."
+                disabled={isGenerating}
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+              />
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating || !inputValue.trim()}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white px-4 rounded-lg transition-colors"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            {isGenerating && (
+              <div className="flex items-center gap-2 text-purple-400 text-xs">
+                <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                <span className="font-mono">AI REASONING...</span>
               </div>
-              <p className="text-sm font-mono">AWAITING DIRECTIVE...</p>
-              <p className="text-xs text-zinc-700 mt-2">Enter a campaign goal to begin</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Split-Pane Layout */}
+      <div className="flex-1 flex relative z-10 pt-14 lg:pt-0 lg:pl-0 overflow-hidden">
+        
+        {/* Spacer for sidebar on desktop - takes up the sidebar width */}
+        <div className="hidden lg:block w-[400px] flex-shrink-0"></div>
+
+        {/* RIGHT CANVAS */}
+        <div className="flex-1 h-full overflow-y-auto p-4 lg:p-8 pb-32 lg:pb-8 flex flex-col bg-black relative">
+          {messages.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center opacity-50 m-auto min-h-[50vh]">
+              <Sparkles className="w-12 h-12 mb-4 animate-pulse text-zinc-600" />
+              <p className="tracking-widest text-sm text-zinc-600">AWAITING DIRECTIVE...</p>
+              <p className="text-xs mt-2 text-zinc-700">Enter a campaign goal to begin</p>
             </div>
           ) : (
-            <div className="p-8 space-y-8">
+            <div className="flex flex-col w-full h-auto">
+              <div className="flex items-center space-x-2 text-cyan-500 mb-8 shrink-0">
+                <Activity className="w-5 h-5" />
+                <span className="text-sm tracking-widest font-bold">ACTIVE INTELLIGENCE FEED</span>
+              </div>
               
-              {/* Active Intelligence Feed - Chat History */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-6">
-                  <Activity className="w-4 h-4 text-cyan-400" />
-                  <h3 className="text-xs font-mono text-cyan-400 uppercase tracking-wider">Active Intelligence Feed</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  <AnimatePresence>
-                    {messages.map((msg, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              <div className="flex flex-col w-full space-y-6 shrink-0">
+                <AnimatePresence>
+                  {messages.map((msg, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'}
+                    >
+                      <div
+                        className={`max-w-[85%] lg:max-w-[70%] rounded-2xl p-4 ${
+                          msg.role === 'user'
+                            ? 'bg-indigo-600 text-white ml-auto'
+                            : 'bg-zinc-900 text-zinc-100 border border-zinc-800'
+                        }`}
                       >
-                        <div
-                          className={`max-w-[70%] rounded-2xl p-4 ${
-                            msg.role === 'user'
-                              ? 'bg-indigo-600 text-white ml-auto'
-                              : 'bg-zinc-900 text-zinc-100 border border-zinc-800'
-                          }`}
-                        >
-                          <p className="text-sm leading-relaxed">
-                            {msg.displayContent || msg.content}
-                          </p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                  <div ref={chatEndRef} />
-                </div>
+                        <p className="text-sm leading-relaxed">
+                          {msg.displayContent || msg.content}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                <div ref={chatEndRef} />
               </div>
 
               {/* Campaign Asset Canvas */}
@@ -343,16 +444,16 @@ export default function CampaignDashboard({ accessToken, userEmail, onLogout }: 
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="space-y-6 pt-8 border-t border-zinc-800"
+                  className="space-y-6 pt-8 border-t border-zinc-800 mt-8"
                 >
                   <div className="flex items-center gap-2 mb-6">
                     <Zap className="w-4 h-4 text-indigo-400" />
                     <h3 className="text-xs font-mono text-indigo-400 uppercase tracking-wider">Campaign Assets</h3>
                   </div>
-                  
+                    
                   {/* Strategy Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
+                  
                     {/* Hook Card */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -498,8 +599,41 @@ export default function CampaignDashboard({ accessToken, userEmail, onLogout }: 
         </div>
       </div>
 
-      {/* Status Bar */}
-      <div className="border-t border-zinc-800 bg-zinc-900/80 backdrop-blur-xl px-6 py-3 flex items-center justify-between text-xs font-mono relative z-20">
+      {/* Mobile Bottom Input Bar - Fixed */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-800">
+        <div className="p-4">
+          <div className="space-y-3">
+            <label className="text-xs font-mono text-indigo-400 uppercase tracking-wider">Campaign Directive</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleGenerate()}
+                placeholder="Enter campaign directive..."
+                disabled={isGenerating}
+                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+              />
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating || !inputValue.trim()}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white px-4 rounded-lg transition-colors"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            {isGenerating && (
+              <div className="flex items-center gap-2 text-purple-400 text-xs">
+                <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                <span className="font-mono">AI REASONING...</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Status Bar - Desktop Only */}
+      <div className="hidden lg:flex border-t border-zinc-800 bg-zinc-900/80 backdrop-blur-xl px-6 py-3 items-center justify-between text-xs font-mono relative z-20">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <Activity className="w-3 h-3 text-indigo-400" />

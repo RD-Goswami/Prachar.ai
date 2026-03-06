@@ -2,11 +2,10 @@
 
 <div align="center">
 
-![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
-![Strands SDK](https://img.shields.io/badge/Strands-SDK-146EB4?style=for-the-badge&logo=python&logoColor=white)
+![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
 ![Amazon Cognito](https://img.shields.io/badge/Amazon-Cognito-DD344C?style=for-the-badge&logo=amazon-aws&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900?style=for-the-badge&logo=aws-lambda&logoColor=white)
+![AWS Amplify](https://img.shields.io/badge/AWS-Amplify-FF9900?style=for-the-badge&logo=aws-amplify&logoColor=white)
 
 **AI for Bharat Hackathon - Student Track: Media, Content & Creativity**
 
@@ -169,9 +168,9 @@ Campaign Response (100% Guaranteed)
 
 ## 🏗️ System Architecture
 
-### 12-Step Execution Path
+### 11-Step Execution Path
 
-Our serverless architecture orchestrates **7 AWS services** across **7 distinct layers** to deliver autonomous campaign generation:
+Our serverless architecture orchestrates **7 AWS services** across **4 distinct phases** to deliver autonomous campaign generation:
 
 ```mermaid
 graph TD
@@ -183,28 +182,23 @@ graph TD
         A4["4️⃣ Lambda Invocation<br/>AWS Lambda<br/>(user_id extracted)"]
     end
     
-    %% Phase 2: Agentic Reasoning & RAG
-    subgraph Phase2["🤖 Phase 2: Agentic Reasoning & RAG"]
-        B1["5️⃣ Agent Initialization<br/>Strands SDK<br/>(Reason/Plan/Act)"]
-        B2["6️⃣ RAG Retrieval<br/>Bedrock Knowledge Base<br/>(brand context)"]
+    %% Phase 2: Agentic Reasoning & Cascade
+    subgraph Phase2["🤖 Phase 2: Intelligence Core"]
+        B1["5️⃣ Stateful Agent Init<br/>Conversation History<br/>(DynamoDB Context)"]
+        B2["6️⃣ 5-Tier Diamond Cascade<br/>Intelligent Failover<br/>(External APIs)"]
     end
     
-    %% Phase 3: Content Generation & Safety
-    subgraph Phase3["✍️ Phase 3: Content Generation & Safety"]
-        C1["7️⃣ Hinglish Copywriting<br/>Claude 3.5 Sonnet<br/>(3 captions)"]
-        C2["8️⃣ Content Safety<br/>Bedrock Guardrails<br/>(PII redaction)"]
+    %% Phase 3: Validation & Asset Selection
+    subgraph Phase3["✍️ Phase 3: Validation & Assets"]
+        C1["7️⃣ Content Extraction<br/>Advanced JSON Parser<br/>(Regex Fallback)"]
+        C2["8️⃣ Visual Selection<br/>Curated Unsplash<br/>(Goal Keyword Matching)"]
     end
     
-    %% Phase 4: Visual Generation & Storage
-    subgraph Phase4["🎨 Phase 4: Visual Generation & Storage"]
-        D1["9️⃣ Image Generation<br/>Titan Image Generator<br/>(1024x1024)"]
-        D2["🔟 Asset Storage<br/>Amazon S3<br/>(pre-signed URLs)"]
-    end
-    
-    %% Phase 5: Persistence & Delivery
-    subgraph Phase5["💾 Phase 5: Persistence & Delivery"]
-        E1["1️⃣1️⃣ Data Persistence<br/>DynamoDB<br/>(user-isolated storage)"]
-        E2["1️⃣2️⃣ Campaign Delivery<br/>Frontend<br/>(complete campaign)"]
+    %% Phase 4: Persistence & Delivery
+    subgraph Phase4["💾 Phase 4: Persistence & Delivery"]
+        D1["9️⃣ Asset Organization<br/>Amazon S3 & URIs<br/>(Metadata Prep)"]
+        D2["🔟 Data Persistence<br/>Amazon DynamoDB<br/>(user-isolated storage)"]
+        D3["1️⃣1️⃣ Campaign Delivery<br/>Frontend War Room<br/>(Complete UI Render)"]
     end
     
     %% Flow connections
@@ -217,8 +211,7 @@ graph TD
     C1 --> C2
     C2 --> D1
     D1 --> D2
-    D2 --> E1
-    E1 --> E2
+    D2 --> D3
     
     %% Styling with AWS colors
     classDef authStyle fill:#DD344C,stroke:#A91B2E,stroke-width:3px,color:#fff
@@ -229,9 +222,9 @@ graph TD
     
     class A1,A2,A3 authStyle
     class A4,B1 computeStyle
-    class B2,C1,C2,D1 aiStyle
-    class D2,E1 storageStyle
-    class E2 deliveryStyle
+    class B2,C1,C2 aiStyle
+    class D1,D2 storageStyle
+    class D3 deliveryStyle
 ```
 
 **📊 Full Architecture Diagram:** See [`architecture/system-architecture.dot`](architecture/system-architecture.dot) for the complete professional-tier Graphviz diagram with all 7 layers and AWS service integrations.
@@ -263,24 +256,24 @@ User Authentication Flow:
 │  3. API Gateway Validation                                   │
 │     • JWT signature verification                             │
 │     • Token expiration check                                 │
-│     • User context extraction (user_id)                      │
+│     • User context extraction (userId)                       │
 │                                                              │
 │  4. Lambda User Isolation                                    │
-│     • All Bedrock calls tagged with user_id                  │
-│     • DynamoDB partition key = user_id                       │
+│     • All cascade calls tagged with userId                   │
+│     • DynamoDB partition key = userId                        │
 │     • Complete audit trail                                   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Bedrock Guardrails: Content Safety & Cultural Sensitivity
+### Content Safety & Cultural Sensitivity
 
-All AI-generated content passes through multi-layer safety filters:
+All AI-generated content is validated for:
 
-- **PII Redaction:** Automatically blocks/anonymizes emails, phone numbers, names
-- **Hate Speech Filter:** HIGH strength detection for harmful content
-- **Violence Filter:** MEDIUM strength for inappropriate content
-- **Cultural Sensitivity:** Ensures content is appropriate for Indian youth audience
-- **Audit Logging:** Every guardrail decision logged to CloudWatch
+- **Cultural Appropriateness:** Ensures content is suitable for Indian youth audience
+- **Power Word Usage:** Validates presence of Aukaat Engine power words
+- **Hinglish Quality:** Verifies 40-60% Hindi-English mix
+- **Emoji Compliance:** Checks for culturally appropriate emojis (🔥, 💯, ✨, 🎉, 🚀)
+- **Audit Logging:** Every cascade tier logged to CloudWatch
 
 **Security Benefits:**
 - ✅ 100% user data isolation (partition keys)
@@ -306,23 +299,19 @@ All AI-generated content passes through multi-layer safety filters:
 
 **7 AWS Services Orchestrated:**
 
-1. **Amazon Bedrock** (4 services)
-   - 🤖 **Claude 3.5 Sonnet** - Campaign planning & Hinglish copywriting
-   - 🎨 **Titan Image Generator v1** - Visual generation (1024x1024)
-   - 📚 **Knowledge Bases** - RAG for brand guideline retrieval
-   - 🛡️ **Guardrails** - Content safety & PII filtering
+1. **AWS Lambda** - Serverless compute (Python 3.11) orchestrating the 5-Tier Diamond Cascade via external provider APIs (Gemini, Groq, OpenRouter)
 
 2. **Amazon Cognito** - User authentication & JWT authorization
 
-3. **AWS Lambda** - Serverless compute (Python 3.11, Strands SDK)
+3. **Amazon DynamoDB** - NoSQL database with user isolation & conversation history
 
-4. **Amazon DynamoDB** - NoSQL database with user isolation
+4. **Amazon S3** - Object storage for images & metadata
 
-5. **Amazon S3** - Object storage for images & brand PDFs
+5. **Amazon API Gateway** - REST API with Cognito Authorizer
 
-6. **Amazon API Gateway** - REST API with Cognito Authorizer
+6. **Amazon CloudWatch** - Monitoring, logging, audit trails for cascade failover
 
-7. **Amazon CloudWatch** - Monitoring, logging, audit trails
+7. **AWS Amplify** - Frontend hosting with Next.js SSR & automatic CI/CD
 
 **Architecture Highlights:**
 - ✅ Fully serverless (auto-scales to 1000+ concurrent users)
@@ -673,7 +662,7 @@ Prachar.ai was built using **Kiro's structured development methodology**, ensuri
 
 ### For Judges
 
-- ✅ **7 AWS Services** - Bedrock (4), Cognito, Lambda, DynamoDB, S3, API Gateway, CloudWatch
+- ✅ **7 AWS Services** - Amplify, Cognito, Lambda, DynamoDB, S3, API Gateway, CloudWatch
 - ✅ **5-Tier Cascade** - Gemini 3, GPT-OSS 120B, Arcee Trinity 400B, Llama 3.3 70B, Mock
 - ✅ **Cultural Innovation** - First Hinglish Creative Director with power words
 - ✅ **Security Excellence** - Enterprise-grade authentication
@@ -681,6 +670,7 @@ Prachar.ai was built using **Kiro's structured development methodology**, ensuri
 - ✅ **Perfect Alignment** - 100/100 projected score
 - ✅ **War Room UI** - Professional tactical dashboard with glassmorphism
 - ✅ **100% Uptime** - Titanium Shield guarantees flawless demos
+- ✅ **Architectural Pivot** - Turned Bedrock quota limits into enterprise resilience feature
 
 ---
 
@@ -694,7 +684,8 @@ Prachar.ai was built using **Kiro's structured development methodology**, ensuri
 ### 2. 5-Tier Diamond Cascade ⭐⭐⭐
 **Unique:** 400B parameter model with 100% uptime guarantee  
 **Technical:** Intelligent failover across 5 tiers (Gemini → Groq → Arcee → Llama → Mock)  
-**Impact:** Zero demo failures, cost-optimized, performance-optimized
+**Impact:** Zero demo failures, cost-optimized, performance-optimized  
+**Architectural Pivot:** Initially built on Amazon Bedrock (Nova/Titan), the project hit severe Quota Limits and ThrottlingExceptions on student accounts. Instead of failing, we engineered a 5-Tier external cascade via Lambda, turning a critical cloud failure point into an enterprise-grade high-availability feature.
 
 ### 3. Cultural Authenticity ⭐⭐⭐
 **Unique:** Power words (Aukaat, Bawaal, Main Character Energy, Level Up)  
@@ -812,15 +803,18 @@ This project was built by **Team NEONX** for the AWS "AI for Bharat" Hackathon -
 ## 🏅 Built With
 
 ### AI/ML & Backend
-- **AI/ML:** Amazon Bedrock (Claude 3.5 Sonnet, Titan Image Generator, Knowledge Bases, Guardrails)
-- **5-Tier Cascade:** Gemini 3 Flash Preview, Groq GPT-OSS 120B, Arcee Trinity Large 400B, Llama 3.3 70B, Titanium Shield Mock
+- **5-Tier Diamond Cascade:** 
+  - **Tier 1:** Gemini 3 Flash Preview (Google) - Advanced reasoning, primary
+  - **Tier 2:** Groq GPT-OSS 120B (Groq) - Ultra-fast fallback (300+ tok/sec)
+  - **Tier 3:** Arcee Trinity Large 400B (OpenRouter) - Creative king
+  - **Tier 4:** Llama 3.3 70B Shield (OpenRouter) - Reliable shield
+  - **Tier 5:** Titanium Shield Mock (Local) - 100% uptime guarantee
 - **Authentication:** Amazon Cognito (User Pools, JWT)
-- **Compute:** AWS Lambda (Python 3.11)
+- **Compute:** AWS Lambda (Python 3.11, urllib for HTTP)
 - **Storage:** Amazon S3, Amazon DynamoDB
 - **API:** Amazon API Gateway
 - **Monitoring:** Amazon CloudWatch
-- **Orchestration:** Strands SDK
-- **Backend Framework:** FastAPI, Python 3.11
+- **Backend Framework:** Python 3.11 with pure REST API calls
 
 ### Frontend & UI
 - **Framework:** Next.js 14, React 18
@@ -849,8 +843,7 @@ This project was created for the AWS "AI for Bharat" Hackathon - Student Track.
 ## 🙏 Acknowledgments
 
 - **Team NEONX** for the collaborative effort and dedication
-- **AWS** for Amazon Bedrock and serverless infrastructure
-- **Strands** for the agentic AI SDK
+- **AWS** for serverless infrastructure (Lambda, Cognito, DynamoDB, S3, API Gateway, CloudWatch, Amplify)
 - **Kiro** for spec-driven development methodology
 - **AI for Bharat Hackathon** for the opportunity to innovate
 - **Google** for Gemini 3 Flash Preview API
@@ -865,7 +858,7 @@ This project was created for the AWS "AI for Bharat" Hackathon - Student Track.
 
 *Aggressive, high-energy Hinglish marketing via a 400B-parameter cascade*
 
-**Developed by Team NEONX using Amazon Bedrock, 5-Tier Diamond Cascade, and Kiro Methodology**
+**Developed by Team NEONX using 5-Tier Diamond Cascade, AWS Lambda, and Kiro Methodology**
 
 **Live Demo:** [https://main.d168pkgc3x4eic.amplifyapp.com/](https://main.d168pkgc3x4eic.amplifyapp.com/)
 
