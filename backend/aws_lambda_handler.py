@@ -40,6 +40,8 @@ from botocore.exceptions import ClientError
 # ============================================================================
 
 logger = logging.getLogger()
+# Add basicConfig to ensure terminal output during local execution
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger.setLevel(logging.INFO)
 
 
@@ -225,58 +227,16 @@ def generate_campaign_with_cascade(goal: str, messages: List[Dict[str, str]] = N
     Returns:
         Dict with keys: hook, offer, cta, captions (list of 3 strings), messages (conversation history)
     """
-    logger.info("🔷 DIAMOND CASCADE INITIATED - STATEFUL AGENT MODE")
+    logger.info("🔷 DIAMOND CASCADE INITIATED - PURE STATELESS MODE")
     logger.info(f"Goal: {goal}")
     
-    # Initialize messages if not provided
-    if messages is None:
-        messages = []
+    # ========================================================================
+    # PURE STATELESS GENERATION - No Message History Processing
+    # ========================================================================
+    # For MVP: Ignore messages array, use fresh one-shot prompts only
+    # Messages are passed through to DynamoDB without being fed to LLMs
     
-    # Construct the user prompt
-    user_prompt = f"""Act as Prachar.ai, an expert AI Creative Director specializing in Hinglish social media content for Indian students and creators.
-
-Goal: {goal}
-
-Brand Context: {brand_context if brand_context else 'No specific brand guidelines. Use general youth-friendly tone.'}
-
-Task: Create a social media campaign with:
-1. hook: An attention-grabbing opening line (Hinglish, 50-80 chars)
-2. offer: The core value proposition (Hinglish, 80-120 chars)
-3. cta: A clear call-to-action (Hinglish, 30-50 chars)
-4. captions: Array of exactly 3 unique Hinglish social media captions (150-200 chars each)
-
-Requirements:
-- Mix Hindi and English naturally (like Indian youth speak)
-- Include relevant emojis (🔥, 💯, ✨, 🎉, 🚀)
-- Be culturally authentic (references to chai, coding, college life, etc.)
-- Engaging and shareable
-- Use power words: Aukaat, Bawaal, Main Character Energy, Level Up
-
-Return ONLY valid JSON with these exact keys: hook, offer, cta, captions (array of 3 strings).
-No markdown, no explanations, just the JSON object."""
-    
-    # Add user message to conversation
-    messages.append({"role": "user", "content": user_prompt})
-    prompt = f"""Act as Prachar.ai, an expert AI Creative Director specializing in Hinglish social media content for Indian students and creators.
-
-Goal: {goal}
-
-Brand Context: {brand_context if brand_context else 'No specific brand guidelines. Use general youth-friendly tone.'}
-
-Task: Create a social media campaign with:
-1. hook: An attention-grabbing opening line (Hinglish, 50-80 chars)
-2. offer: The core value proposition (Hinglish, 80-120 chars)
-3. cta: A clear call-to-action (Hinglish, 30-50 chars)
-4. captions: Array of exactly 3 unique Hinglish social media captions (150-200 chars each)
-
-Requirements:
-- Mix Hindi and English naturally (like Indian youth speak)
-- Include relevant emojis (🔥, 💯, ✨, 🎉, 🚀)
-- Be culturally authentic (references to chai, coding, college life, etc.)
-- Engaging and shareable
-
-Return ONLY valid JSON with these exact keys: hook, offer, cta, captions (array of 3 strings).
-No markdown, no explanations, just the JSON object."""
+    logger.info("Using pure stateless generation (no conversation history)")
 
     # ========================================================================
     # TIER 1: GOOGLE GEMINI 3 FLASH PREVIEW (Primary)
@@ -292,22 +252,13 @@ No markdown, no explanations, just the JSON object."""
         
         gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={gemini_api_key}"
         
-        # Convert messages to Gemini format (contents)
-        gemini_contents = []
-        
-        # Add system prompt as first user message for Gemini
-        gemini_contents.append({
+        # Pure stateless prompt for Gemini
+        gemini_contents = [{
             "role": "user",
-            "parts": [{"text": SYSTEM_PROMPT}]
-        })
-        
-        # Convert conversation history
-        for msg in messages:
-            role = "model" if msg["role"] == "assistant" else "user"
-            gemini_contents.append({
-                "role": role,
-                "parts": [{"text": msg["content"]}]
-            })
+            "parts": [{
+                "text": SYSTEM_PROMPT + f"\n\nTask: Create a viral Hinglish social media campaign for the following goal: {goal}\n\nReturn ONLY valid JSON with keys: hook, offer, cta, captions (array of 3)."
+            }]
+        }]
         
         gemini_payload = {
             "contents": gemini_contents,
@@ -325,7 +276,7 @@ No markdown, no explanations, just the JSON object."""
             method='POST'
         )
         
-        with urlopen(gemini_request, timeout=15) as response:
+        with urlopen(gemini_request, timeout=25) as response:
             gemini_result = json.loads(response.read().decode('utf-8'))
         
         # Parse Gemini response
@@ -340,9 +291,8 @@ No markdown, no explanations, just the JSON object."""
                 # Validate structure
                 if all(key in campaign_data for key in ['hook', 'offer', 'cta', 'captions']):
                     if isinstance(campaign_data['captions'], list) and len(campaign_data['captions']) >= 3:
-                        # Add assistant response to messages
-                        messages.append({"role": "assistant", "content": text})
-                        campaign_data['messages'] = messages
+                        # Pass messages through without mutation
+                        campaign_data['messages'] = messages if messages else []
                         
                         logger.info("✅ TIER 1 SUCCESS: Gemini 3 Flash Preview delivered")
                         return campaign_data
@@ -367,12 +317,15 @@ No markdown, no explanations, just the JSON object."""
         
         groq_url = "https://api.groq.com/openai/v1/chat/completions"
         
-        # Prepare messages with system prompt
-        groq_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
+        # Pure stateless prompt for Groq
+        api_messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Task: Create a viral Hinglish social media campaign for the following goal: {goal}\n\nReturn ONLY valid JSON with keys: hook, offer, cta, captions (array of 3)."}
+        ]
         
         groq_payload = {
             "model": GROQ_MODEL,
-            "messages": groq_messages,
+            "messages": api_messages,
             "response_format": {"type": "json_object"},
             "temperature": 0.7,
             "max_tokens": 1024
@@ -389,7 +342,7 @@ No markdown, no explanations, just the JSON object."""
             method='POST'
         )
         
-        with urlopen(groq_request, timeout=15) as response:
+        with urlopen(groq_request, timeout=25) as response:
             groq_result = json.loads(response.read().decode('utf-8'))
         
         # Parse Groq response
@@ -401,9 +354,8 @@ No markdown, no explanations, just the JSON object."""
                 # Validate structure
                 if all(key in campaign_data for key in ['hook', 'offer', 'cta', 'captions']):
                     if isinstance(campaign_data['captions'], list) and len(campaign_data['captions']) >= 3:
-                        # Add assistant response to messages
-                        messages.append({"role": "assistant", "content": message['content']})
-                        campaign_data['messages'] = messages
+                        # Pass messages through without mutation
+                        campaign_data['messages'] = messages if messages else []
                         
                         logger.info("✅ TIER 2 SUCCESS: Groq GPT-OSS 120B delivered")
                         return campaign_data
@@ -428,12 +380,15 @@ No markdown, no explanations, just the JSON object."""
         
         openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
         
-        # Prepare messages with system prompt
-        openrouter_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
+        # Pure stateless prompt for OpenRouter
+        api_messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Task: Create a viral Hinglish social media campaign for the following goal: {goal}\n\nReturn ONLY valid JSON with keys: hook, offer, cta, captions (array of 3)."}
+        ]
         
         openrouter_payload = {
             "model": OPENROUTER_MODEL,
-            "messages": openrouter_messages,
+            "messages": api_messages,
             "response_format": {"type": "json_object"},
             "temperature": 0.7,
             "max_tokens": 1024
@@ -464,9 +419,8 @@ No markdown, no explanations, just the JSON object."""
                 # Validate structure
                 if all(key in campaign_data for key in ['hook', 'offer', 'cta', 'captions']):
                     if isinstance(campaign_data['captions'], list) and len(campaign_data['captions']) >= 3:
-                        # Add assistant response to messages
-                        messages.append({"role": "assistant", "content": message['content']})
-                        campaign_data['messages'] = messages
+                        # Pass messages through without mutation
+                        campaign_data['messages'] = messages if messages else []
                         
                         logger.info("✅ TIER 3 SUCCESS: OpenRouter Arcee Trinity Large delivered")
                         return campaign_data
@@ -491,12 +445,15 @@ No markdown, no explanations, just the JSON object."""
         
         openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
         
-        # Prepare messages with system prompt
-        shield_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
+        # Pure stateless prompt for Shield
+        api_messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Task: Create a viral Hinglish social media campaign for the following goal: {goal}\n\nReturn ONLY valid JSON with keys: hook, offer, cta, captions (array of 3)."}
+        ]
         
         shield_payload = {
             "model": OPENROUTER_SHIELD_MODEL,
-            "messages": shield_messages,
+            "messages": api_messages,
             "response_format": {"type": "json_object"},
             "temperature": 0.7,
             "max_tokens": 1024
@@ -527,9 +484,8 @@ No markdown, no explanations, just the JSON object."""
                 # Validate structure
                 if all(key in campaign_data for key in ['hook', 'offer', 'cta', 'captions']):
                     if isinstance(campaign_data['captions'], list) and len(campaign_data['captions']) >= 3:
-                        # Add assistant response to messages
-                        messages.append({"role": "assistant", "content": message['content']})
-                        campaign_data['messages'] = messages
+                        # Pass messages through without mutation
+                        campaign_data['messages'] = messages if messages else []
                         
                         logger.info("✅ TIER 4 SUCCESS: Llama 3.3 70B Shield delivered")
                         return campaign_data
@@ -584,10 +540,8 @@ No markdown, no explanations, just the JSON object."""
             ]
         }
     
-    # Add mock response to messages
-    mock_content = json.dumps(mock_response)
-    messages.append({"role": "assistant", "content": mock_content})
-    mock_response['messages'] = messages
+    # Pass messages through without mutation
+    mock_response['messages'] = messages if messages else []
     
     return mock_response
 
